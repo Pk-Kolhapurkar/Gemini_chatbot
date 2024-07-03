@@ -22,7 +22,8 @@ st.set_page_config(
 st.sidebar.image(image_path, caption='Gemini AI', use_column_width=True)
 st.sidebar.title("Options")
 if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
-    clear_chat_window()
+    st.session_state.history = []
+    st.experimental_rerun()
 
 st.title('Upload Image And Chat with Image')
 
