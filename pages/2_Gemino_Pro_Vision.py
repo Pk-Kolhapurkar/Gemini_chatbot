@@ -97,4 +97,3 @@ if "app_key" in st.session_state:
                 st.session_state.history_pic.append({"role": "user", "text": prompt})
 
             show_message(prompt, resized_img, "Thinking...")
-            
