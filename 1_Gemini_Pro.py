@@ -21,6 +21,7 @@ st.sidebar.image("Google-Gemini-AI-Logo.png", caption='Gemini AI', use_column_wi
 st.sidebar.title("Options")
 if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
     st.session_state.history = []
+    st.session_state.deleted_indices = []  # Clear deleted indices
     st.experimental_rerun()
 
 st.title('The Answer Genie')
@@ -37,6 +38,8 @@ if "app_key" not in st.session_state:
 
 if "history" not in st.session_state:
     st.session_state.history = []
+if "deleted_indices" not in st.session_state:
+    st.session_state.deleted_indices = []
 
 try:
     genai.configure(api_key=st.session_state.app_key)
@@ -47,10 +50,14 @@ model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=st.session_state.history)
 
 def delete_message(idx):
-    del st.session_state.history[idx]
+    if idx not in st.session_state.deleted_indices:
+        st.session_state.deleted_indices.append(idx)
     st.experimental_rerun()
 
-for idx, message in enumerate(chat.history):
+# Render chat messages and provide delete buttons
+filtered_history = [msg for idx, msg in enumerate(chat.history) if idx not in st.session_state.deleted_indices]
+
+for idx, message in enumerate(filtered_history):
     role = "assistant" if message.role == "model" else message.role
     with st.chat_message(role):
         st.markdown(message.parts[0].text)
