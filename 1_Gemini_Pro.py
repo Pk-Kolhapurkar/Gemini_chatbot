@@ -21,7 +21,6 @@ st.sidebar.image("Google-Gemini-AI-Logo.png", caption='Gemini AI', use_column_wi
 st.sidebar.title("Options")
 if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
     st.session_state.history = []
-    st.session_state.deleted_indices = []  # Clear deleted indices
     st.experimental_rerun()
 
 st.title('The Answer Genie')
@@ -38,8 +37,6 @@ if "app_key" not in st.session_state:
 
 if "history" not in st.session_state:
     st.session_state.history = []
-if "deleted_indices" not in st.session_state:
-    st.session_state.deleted_indices = []
 
 try:
     genai.configure(api_key=st.session_state.app_key)
@@ -50,19 +47,21 @@ model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=st.session_state.history)
 
 def delete_message(idx):
-    if idx not in st.session_state.deleted_indices:
-        st.session_state.deleted_indices.append(idx)
+    st.session_state.history.pop(idx)
+    st.session_state.history = [message for i, message in enumerate(st.session_state.history) if i != idx]
     st.experimental_rerun()
 
-# Render chat messages and provide delete buttons
-filtered_history = [msg for idx, msg in enumerate(chat.history) if idx not in st.session_state.deleted_indices]
-
-for idx, message in enumerate(filtered_history):
-    role = "assistant" if message.role == "model" else message.role
+# Display chat history with delete buttons
+for idx, message in enumerate(st.session_state.history):
+    role = "assistant" if message['role'] == "model" else message['role']
     with st.chat_message(role):
-        st.markdown(message.parts[0].text)
-        if st.button("Delete", key=f"delete_{idx}"):
-            delete_message(idx)
+        st.markdown(message['text'])
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("Delete", key=f"delete_{idx}"):
+                delete_message(idx)
+        with col2:
+            st.write("")  # Just to keep layout consistent
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
@@ -87,6 +86,7 @@ if "app_key" in st.session_state:
                             word_count = 0
                             random_int = random.randint(5, 10)
                 message_placeholder.markdown(full_response)
+                st.session_state.history.append({"role": "assistant", "text": full_response})
             except genai.types.generation_types.BlockedPromptException as e:
                 st.exception(e)
             except Exception as e:
