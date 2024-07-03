@@ -6,6 +6,7 @@ import random
 from dotenv import load_dotenv
 
 load_dotenv()
+
 # Sets the avatar for user as well as the bot
 image_path = "Google-Gemini-AI-Logo.png"
 
@@ -16,6 +17,8 @@ st.set_page_config(
         'About': "# Made by Prathamesh Khade"
     }
 )
+
+st.sidebar.image(image_path, caption='Gemini AI', use_column_width=True)
 
 st.title('Upload Image And Chat with Image')
 
@@ -120,6 +123,3 @@ if "app_key" in st.session_state:
                 idx = len(st.session_state.history_pic) - 1
 
             show_message(prompt, resized_img, "Thinking...", idx)
-
-# Display the avatar image at the end
-st.image(image_path, caption='Gemini AI', use_column_width=True)
