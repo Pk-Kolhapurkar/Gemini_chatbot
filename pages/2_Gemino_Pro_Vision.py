@@ -49,7 +49,7 @@ def show_message(prompt, image, loading_str):
         message_placeholder.markdown(loading_str)
         full_response = ""
         try:
-            for chunk in model.generate_content([prompt, image], stream = True, safety_settings = SAFETY_SETTTINGS):                   
+            for chunk in model.generate_content([prompt, image], stream = True):                   
                 word_count = 0
                 random_int = random.randint(5, 10)
                 for word in chunk.text:
