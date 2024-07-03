@@ -6,7 +6,6 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Set page configuration
 st.set_page_config(
     page_title="Chat with image",
     page_icon="🗣️",
@@ -15,19 +14,23 @@ st.set_page_config(
     }
 )
 
-# Sidebar with image and API key input
+# Sidebar for the Gemini logo and clear chat button
 st.sidebar.image("Google-Gemini-AI-Logo.png", caption='Gemini AI', use_column_width=True)
+st.sidebar.title("Options")
+if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
+    st.session_state.history = []
+    st.experimental_rerun()
 
-st.title("Chat with Image")
+st.title('Upload Image and Chat with Image')
 st.caption("A chatbot, powered by Google Gemini Pro.")
 
-# API key input
+# API Key input section
 if "app_key" not in st.session_state:
     st.markdown(
         "To use this app, you need a Gemini API key. If you don't have one, you can create it "
         "[here](https://developers.google.com/gemini/get-api-key)."
     )
-    app_key = st.text_input("Your Gemini App Key", type='password', key='api_key_input')
+    app_key = st.text_input("Enter your Gemini App Key below", type='password', key='api_key_input')
     if app_key:
         st.session_state.app_key = app_key
 
@@ -35,18 +38,11 @@ if "history" not in st.session_state:
     st.session_state.history = []
 
 try:
-    if "app_key" in st.session_state:
-        genai.configure(api_key=st.session_state.app_key)
-        model = genai.GenerativeModel('gemini-pro')
-        chat = model.start_chat(history=st.session_state.history)
+    genai.configure(api_key=st.session_state.app_key)
+    model = genai.GenerativeModel('gemini-pro')
+    chat = model.start_chat(history=st.session_state.history)
 except AttributeError as e:
     st.warning("Please enter your Gemini App Key.")
-
-# Sidebar button to clear chat history
-with st.sidebar:
-    if st.button("Clear Chat Window", use_container_width=True, type="primary"):
-        st.session_state.history = []
-        st.experimental_rerun()
 
 # Display chat history
 for message in chat.history:
@@ -54,9 +50,9 @@ for message in chat.history:
     with st.chat_message(role):
         st.markdown(message.parts[0].text)
 
-# Handle user input
+# Handle new prompts
 if "app_key" in st.session_state:
-    if prompt := st.chat_input("Describe this picture"):
+    if prompt := st.chat_input("Type your message here"):
         prompt = prompt.replace('\n', '  \n')
         with st.chat_message("user"):
             st.markdown(prompt)
