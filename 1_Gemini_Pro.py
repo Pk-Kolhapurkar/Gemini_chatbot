@@ -9,7 +9,7 @@ from utils import SAFETY_SETTTINGS
 load_dotenv()
 
 st.set_page_config(
-    page_title="Chat with image",
+    page_title="The Answer Genie",
     page_icon="🗣️",
     menu_items={
         'About': "# Made by Prathamesh Khade"
@@ -46,13 +46,19 @@ except AttributeError as e:
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=st.session_state.history)
 
-for message in chat.history:
+def delete_message(idx):
+    del st.session_state.history[idx]
+    st.experimental_rerun()
+
+for idx, message in enumerate(chat.history):
     role = "assistant" if message.role == "model" else message.role
     with st.chat_message(role):
         st.markdown(message.parts[0].text)
+        if st.button("Delete", key=f"delete_{idx}"):
+            delete_message(idx)
 
 if "app_key" in st.session_state:
-    if prompt := st.chat_input("ask question here"):
+    if prompt := st.chat_input("Ask a question here"):
         prompt = prompt.replace('\n', '  \n')
         with st.chat_message("user"):
             st.markdown(prompt)
