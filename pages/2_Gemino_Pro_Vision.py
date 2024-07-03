@@ -29,7 +29,7 @@ st.title('Upload Image And Chat with Image')
 if "app_key" not in st.session_state:
     st.markdown(
         "To use this app, you need a Gemini API key. If you don't have one, you can create it "
-        "[here](https://aistudio.google.com/app/apikey)."
+        "[here](https://developers.google.com/gemini/get-api-key)."
     )
     app_key = st.text_input("Enter your Gemini App Key below", type='password', key='api_key_input')
     if app_key:
@@ -73,14 +73,16 @@ def show_message(prompt, image, loading_str, idx):
                 st.experimental_rerun()
         with col2:
             if st.button("Rewrite", key=f"rewrite_{idx}"):
-                new_text = st.text_area(f"Rewrite message {idx}", full_response, key=f"rewrite_text_{idx}")
-                if new_text:
-                    rewrite_message(idx, new_text)
-                    st.experimental_rerun()
+                # Store the text to be rewritten
+                st.session_state.rewrite_text = full_response
+                st.session_state.rewrite_idx = idx
+                st.experimental_rerun()
 
 def clear_chat_window():
     st.session_state.history = []
     st.session_state.history_pic = []
+    st.session_state.rewrite_text = ""
+    st.session_state.rewrite_idx = None
     st.experimental_rerun()
 
 def clear_state():
@@ -88,6 +90,10 @@ def clear_state():
 
 if "history_pic" not in st.session_state:
     st.session_state.history_pic = []
+if "rewrite_text" not in st.session_state:
+    st.session_state.rewrite_text = ""
+if "rewrite_idx" not in st.session_state:
+    st.session_state.rewrite_idx = None
 
 image = None
 if "app_key" in st.session_state:
@@ -115,10 +121,21 @@ if len(st.session_state.history_pic) > 0:
                     st.experimental_rerun()
             with col2:
                 if st.button("Rewrite", key=f"rewrite_{idx}_history"):
-                    new_text = st.text_area(f"Rewrite message {idx}", item["text"], key=f"rewrite_text_{idx}_history")
-                    if new_text:
-                        rewrite_message(idx, new_text)
-                        st.experimental_rerun()
+                    # Store the text to be rewritten
+                    st.session_state.rewrite_text = item["text"]
+                    st.session_state.rewrite_idx = idx
+                    st.experimental_rerun()
+
+# Form for rewriting messages
+if st.session_state.rewrite_idx is not None:
+    with st.form(key='rewrite_form'):
+        new_text = st.text_area("Rewrite your message:", st.session_state.rewrite_text, key='rewrite_text_area')
+        submit_button = st.form_submit_button(label='Submit')
+        if submit_button:
+            rewrite_message(st.session_state.rewrite_idx, new_text)
+            st.session_state.rewrite_text = ""
+            st.session_state.rewrite_idx = None
+            st.experimental_rerun()
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Describe this picture", key='prompt_input'):
