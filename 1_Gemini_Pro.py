@@ -46,25 +46,21 @@ except AttributeError as e:
 model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=st.session_state.history)
 
-# Function to display chat history with delete buttons
-def display_chat_history():
-    for idx, message in enumerate(st.session_state.history):
-        role = "assistant" if message['role'] == "model" else message['role']
-        with st.chat_message(role):
-            st.markdown(message['text'])  # Access text directly from message
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                if st.button("Delete", key=f"delete_{idx}"):
-                    delete_message(idx)
-            with col2:
-                st.write("")  # Just to keep layout consistent
-
 def delete_message(idx):
     st.session_state.history.pop(idx)
     st.experimental_rerun()
 
 # Display chat history with delete buttons
-display_chat_history()
+for idx, message in enumerate(st.session_state.history):
+    role = "assistant" if message.role == "model" else message.role
+    with st.chat_message(role):
+        st.markdown(message.parts[0].text)  # Access text through parts attribute
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            if st.button("Delete", key=f"delete_{idx}"):
+                delete_message(idx)
+        with col2:
+            st.write("")  # Just to keep layout consistent
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
@@ -89,13 +85,7 @@ if "app_key" in st.session_state:
                             word_count = 0
                             random_int = random.randint(5, 10)
                 message_placeholder.markdown(full_response)
-                
-                # Update history after response is fully generated
                 st.session_state.history.append({"role": "assistant", "text": full_response})
-                
-                # Refresh the chat history to include the delete button
-                display_chat_history()
-
             except genai.types.generation_types.BlockedPromptException as e:
                 st.exception(e)
             except Exception as e:
