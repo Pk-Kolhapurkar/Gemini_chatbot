@@ -47,20 +47,15 @@ model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=st.session_state.history)
 
 def delete_message(idx):
-    st.session_state.history.pop(idx)
+    del st.session_state.history[idx]
     st.experimental_rerun()
 
-# Display chat history with delete buttons
-for idx, message in enumerate(st.session_state.history):
+for idx, message in enumerate(chat.history):
     role = "assistant" if message.role == "model" else message.role
     with st.chat_message(role):
-        st.markdown(message.parts[0].text)  # Access text through parts attribute
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("Delete", key=f"delete_{idx}"):
-                delete_message(idx)
-        with col2:
-            st.write("")  # Just to keep layout consistent
+        st.markdown(message.parts[0].text)
+        if st.button("Delete", key=f"delete_{idx}"):
+            delete_message(idx)
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
@@ -85,8 +80,8 @@ if "app_key" in st.session_state:
                             word_count = 0
                             random_int = random.randint(5, 10)
                 message_placeholder.markdown(full_response)
-                st.session_state.history.append({"role": "assistant", "text": full_response})
             except genai.types.generation_types.BlockedPromptException as e:
                 st.exception(e)
             except Exception as e:
                 st.exception(e)
+            st.session_state.history = chat.history
