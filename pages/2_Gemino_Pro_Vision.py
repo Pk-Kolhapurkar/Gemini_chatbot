@@ -47,7 +47,7 @@ def show_message(prompt, image, loading_str, idx):
         message_placeholder.markdown(loading_str)
         full_response = ""
         try:
-            for chunk in model.generate_content([prompt, image], stream=True):                   
+            for chunk in model.generate_content([prompt, image], stream=True):
                 word_count = 0
                 random_int = random.randint(5, 10)
                 for word in chunk.text:
@@ -64,19 +64,6 @@ def show_message(prompt, image, loading_str, idx):
             st.exception(e)
         message_placeholder.markdown(full_response)
         st.session_state.history_pic[idx] = {"role": "assistant", "text": full_response}
-
-        # Add delete and edit buttons immediately after the response
-        col1, col2 = st.columns([1, 1])
-        with col1:
-            if st.button("Delete", key=f"delete_{idx}"):
-                delete_message(idx)
-                st.experimental_rerun()
-        with col2:
-            if st.button("Edit", key=f"edit_{idx}"):
-                st.session_state.edit_message_idx = idx
-                st.session_state.edit_message_text = full_response
-                st.session_state.is_editing = True
-                st.experimental_rerun()
 
 def clear_chat_window():
     st.session_state.history = []
@@ -131,22 +118,26 @@ if len(st.session_state.history_pic) > 0:
                         st.experimental_rerun()
         elif st.session_state.edit_message_idx == idx:
             with st.chat_message("user"):
+                form = st.form(key=f"edit_form_{idx}")
                 st.text_area("Edit your message:", st.session_state.edit_message_text, key=f"edit_text_area_{idx}")
-                col1, col2 = st.columns([1, 1])
-                with col1:
-                    if st.button("Cancel", key=f"cancel_edit_{idx}"):
-                        st.session_state.is_editing = False
-                        st.session_state.edit_message_idx = None
-                        st.session_state.edit_message_text = ""
-                        st.experimental_rerun()
-                with col2:
-                    if st.button("Submit", key=f"submit_edit_{idx}"):
-                        new_text = st.session_state.edit_message_text
-                        rewrite_message(idx, new_text)
-                        st.session_state.is_editing = False
-                        st.session_state.edit_message_idx = None
-                        st.session_state.edit_message_text = ""
-                        st.experimental_rerun()
+                submitted = form.form_submit_button("Submit")
+                if submitted:
+                    new_text = st.session_state.edit_message_text
+                    # Remove old user message
+                    delete_message(idx)
+                    # Add updated user message
+                    st.session_state.history_pic.append({"role": "user", "text": new_text})
+                    idx = len(st.session_state.history_pic) - 1
+                    show_message(new_text, resized_img, "Thinking...", idx)
+                    st.session_state.is_editing = False
+                    st.session_state.edit_message_idx = None
+                    st.session_state.edit_message_text = ""
+                    st.experimental_rerun()
+                if st.button("Cancel", key=f"cancel_edit_{idx}"):
+                    st.session_state.is_editing = False
+                    st.session_state.edit_message_idx = None
+                    st.session_state.edit_message_text = ""
+                    st.experimental_rerun()
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Describe this picture", key='prompt_input'):
