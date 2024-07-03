@@ -48,14 +48,13 @@ chat = model.start_chat(history=st.session_state.history)
 
 def delete_message(idx):
     st.session_state.history.pop(idx)
-    st.session_state.history = [message for i, message in enumerate(st.session_state.history) if i != idx]
     st.experimental_rerun()
 
 # Display chat history with delete buttons
 for idx, message in enumerate(st.session_state.history):
-    role = "assistant" if message['role'] == "model" else message['role']
+    role = "assistant" if message.role == "model" else message.role
     with st.chat_message(role):
-        st.markdown(message['text'])
+        st.markdown(message.parts[0].text)  # Access text through parts attribute
         col1, col2 = st.columns([1, 1])
         with col1:
             if st.button("Delete", key=f"delete_{idx}"):
@@ -91,4 +90,3 @@ if "app_key" in st.session_state:
                 st.exception(e)
             except Exception as e:
                 st.exception(e)
-            st.session_state.history = chat.history
