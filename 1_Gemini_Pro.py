@@ -58,8 +58,7 @@ def display_message_with_delete(idx, message):
         if st.button("Delete", key=f"delete_{idx}"):
             delete_message(idx)
 
-for idx, message in enumerate(chat.history):
-    display_message_with_delete(idx, {"role": message.role, "text": message.parts[0].text})
+
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
