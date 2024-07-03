@@ -16,12 +16,13 @@ st.set_page_config(
         'About': "# Made by Prathamesh Khade"
     }
 )
-st.title('Upload Image And chat with image')
+
+st.title('Upload Image And Chat with Image')
 
 if "app_key" not in st.session_state:
     st.markdown(
         "To use this app, you need a Gemini API key. If you don't have one, you can create it "
-        "[here](https://aistudio.google.com/app/apikey)."
+        "[here](https://developers.google.com/gemini/get-api-key)."
     )
     app_key = st.text_input("Enter your Gemini App Key below", type='password', key='api_key_input')
     if app_key:
@@ -119,3 +120,6 @@ if "app_key" in st.session_state:
                 idx = len(st.session_state.history_pic) - 1
 
             show_message(prompt, resized_img, "Thinking...", idx)
+
+# Display the avatar image at the end
+st.image(image_path, caption='Gemini AI', use_column_width=True)
