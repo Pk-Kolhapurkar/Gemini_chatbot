@@ -1,45 +1,34 @@
 
+
 import google.generativeai as genai
 import streamlit as st
 import time
 import random
 from utils import SAFETY_SETTTINGS
-from dotenv import load_dotenv
 
-load_dotenv()
-
-# Sets the avatar for user as well as the bot
-image_path = "Google-Gemini-AI-Logo.png"
 
 st.set_page_config(
-    page_title="Chat with me",
-    page_icon="🗣️",
+    page_title="Chat To XYthing",
+    page_icon="🔥",
     menu_items={
-        'About': "# Made by Prathamesh Khade"
+        'About': "# Make By hiliuxg"
     }
 )
 
-# Sidebar for the Gemini logo and clear chat button
-st.sidebar.image(image_path, caption='Gemini AI', use_column_width=True)
-st.sidebar.title("Options")
-if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
-    clear_chat_window()
-
-st.title('Chat with me')
+st.title("Chat To XYthing")
+st.caption("a chatbot, powered by google gemini pro.")
 
 
 if "app_key" not in st.session_state:
-    st.markdown(
-        "To use this app, you need a Gemini API key. If you don't have one, you can create it "
-        "[here](https://aistudio.google.com/app/apikey)."
-    )
-    app_key = st.text_input("Enter your Gemini App Key below", type='password', key='api_key_input')
+    app_key = st.text_input("Your Gemini App Key", type='password')
     if app_key:
         st.session_state.app_key = app_key
 
+if "history" not in st.session_state:
+    st.session_state.history = []
+
 try:
-    genai.configure(api_key=st.session_state.app_key)
-    model = genai.GenerativeModel('gemini-pro-vision')
+    genai.configure(api_key = st.session_state.app_key)
 except AttributeError as e:
     st.warning("Please Put Your Gemini App Key First.")
 
