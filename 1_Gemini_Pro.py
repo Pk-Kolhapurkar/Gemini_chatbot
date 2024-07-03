@@ -50,20 +50,17 @@ def delete_message(idx):
     del st.session_state.history[idx]
     st.experimental_rerun()
 
-# Display messages with delete options
-def display_messages():
-    for idx, message in enumerate(st.session_state.history):
-        role = "assistant" if message["role"] == "model" else message["role"]
-        with st.chat_message(role):
-            st.markdown(message["text"])
-            if role == "assistant":
-                if st.button(f"Delete Message {idx}", key=f"delete_{idx}"):
-                    delete_message(idx)
+# Function to display each message with a delete button
+def display_message_with_delete(idx, message):
+    role = "assistant" if message.role == "model" else message.role
+    with st.chat_message(role):
+        st.markdown(message.parts[0].text)
+        if st.button("Delete", key=f"delete_{idx}"):
+            delete_message(idx)
 
-# Display the chat history
-display_messages()
+for idx, message in enumerate(chat.history):
+    display_message_with_delete(idx, message)
 
-# Handle new user input
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
         prompt = prompt.replace('\n', '  \n')
@@ -93,6 +90,7 @@ if "app_key" in st.session_state:
                 st.exception(e)
             except Exception as e:
                 st.exception(e)
-            
-            # Display the new assistant's message with the delete option immediately
-            display_messages()
+            st.session_state.history = chat.history
+
+        # Display the assistant's message with the delete option
+        display_message_with_delete(len(st.session_state.history) - 1, {"role": "model", "text": full_response})
