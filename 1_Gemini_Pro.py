@@ -5,22 +5,35 @@ import streamlit as st
 import time
 import random
 from utils import SAFETY_SETTTINGS
+from dotenv import load_dotenv
 
+load_dotenv()
 
 st.set_page_config(
-    page_title="Chat To XYthing",
-    page_icon="🔥",
+    page_title="Chat with image",
+    page_icon="🗣️",
     menu_items={
-        'About': "# Make By hiliuxg"
+        'About': "# Made by Prathamesh Khade"
     }
 )
 
-st.title("Chat To XYthing")
-st.caption("a chatbot, powered by google gemini pro.")
+# Sidebar for the Gemini logo and clear chat button
+st.sidebar.image("Google-Gemini-AI-Logo.png", caption='Gemini AI', use_column_width=True)
+st.sidebar.title("Options")
+if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
+    st.session_state.history = []
+    st.experimental_rerun()
+
+st.title('Upload Image and Chat with Image')
 
 
+# API Key input section
 if "app_key" not in st.session_state:
-    app_key = st.text_input("Your Gemini App Key", type='password')
+    st.markdown(
+        "To use this app, you need a Gemini API key. If you don't have one, you can create it "
+        "[here](https://aistudio.google.com/app/apikey)."
+    )
+    app_key = st.text_input("Enter your Gemini App Key below", type='password', key='api_key_input')
     if app_key:
         st.session_state.app_key = app_key
 
