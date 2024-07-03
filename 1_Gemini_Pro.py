@@ -22,7 +22,7 @@ if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primar
     st.experimental_rerun()
 
 st.title('Upload Image and Chat with Image')
-st.caption("A chatbot, powered by Google Gemini Pro.")
+
 
 # API Key input section
 if "app_key" not in st.session_state:
