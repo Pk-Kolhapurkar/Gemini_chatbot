@@ -1,26 +1,33 @@
-
-
 import google.generativeai as genai
 import streamlit as st
 import time
 import random
-from utils import SAFETY_SETTTINGS
+from dotenv import load_dotenv
 
+load_dotenv()
 
+# Set page configuration
 st.set_page_config(
-    page_title="Chat To XYthing",
-    page_icon="🔥",
+    page_title="Chat with image",
+    page_icon="🗣️",
     menu_items={
-        'About': "# Make By hiliuxg"
+        'About': "# Made by Prathamesh Khade"
     }
 )
 
-st.title("Chat To XYthing")
-st.caption("a chatbot, powered by google gemini pro.")
+# Sidebar with image and API key input
+st.sidebar.image("Google-Gemini-AI-Logo.png", caption='Gemini AI', use_column_width=True)
 
+st.title("Chat with Image")
+st.caption("A chatbot, powered by Google Gemini Pro.")
 
+# API key input
 if "app_key" not in st.session_state:
-    app_key = st.text_input("Your Gemini App Key", type='password')
+    st.markdown(
+        "To use this app, you need a Gemini API key. If you don't have one, you can create it "
+        "[here](https://developers.google.com/gemini/get-api-key)."
+    )
+    app_key = st.text_input("Your Gemini App Key", type='password', key='api_key_input')
     if app_key:
         st.session_state.app_key = app_key
 
@@ -28,25 +35,28 @@ if "history" not in st.session_state:
     st.session_state.history = []
 
 try:
-    genai.configure(api_key = st.session_state.app_key)
+    if "app_key" in st.session_state:
+        genai.configure(api_key=st.session_state.app_key)
+        model = genai.GenerativeModel('gemini-pro')
+        chat = model.start_chat(history=st.session_state.history)
 except AttributeError as e:
-    st.warning("Please Put Your Gemini App Key First.")
+    st.warning("Please enter your Gemini App Key.")
 
-model = genai.GenerativeModel('gemini-pro')
-chat = model.start_chat(history = st.session_state.history)
-
+# Sidebar button to clear chat history
 with st.sidebar:
-    if st.button("Clear Chat Window", use_container_width = True, type="primary"):
+    if st.button("Clear Chat Window", use_container_width=True, type="primary"):
         st.session_state.history = []
-        st.rerun()
-    
+        st.experimental_rerun()
+
+# Display chat history
 for message in chat.history:
     role = "assistant" if message.role == "model" else message.role
     with st.chat_message(role):
         st.markdown(message.parts[0].text)
 
+# Handle user input
 if "app_key" in st.session_state:
-    if prompt := st.chat_input(""):
+    if prompt := st.chat_input("Describe this picture"):
         prompt = prompt.replace('\n', '  \n')
         with st.chat_message("user"):
             st.markdown(prompt)
@@ -56,7 +66,7 @@ if "app_key" in st.session_state:
             message_placeholder.markdown("Thinking...")
             try:
                 full_response = ""
-                for chunk in chat.send_message(prompt, stream=True, safety_settings = SAFETY_SETTTINGS):
+                for chunk in chat.send_message(prompt, stream=True):
                     word_count = 0
                     random_int = random.randint(5, 10)
                     for word in chunk.text:
