@@ -11,7 +11,7 @@ load_dotenv()
 image_path = "Google-Gemini-AI-Logo.png"
 
 st.set_page_config(
-    page_title="Chat with image",
+    page_title="Chat with Image",
     page_icon="🗣️",
     menu_items={
         'About': "# Made by Prathamesh Khade"
@@ -22,11 +22,12 @@ st.set_page_config(
 st.sidebar.image(image_path, caption='Gemini AI', use_column_width=True)
 st.sidebar.title("Options")
 if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
-    st.session_state.history = []
+    st.session_state.history_pic = []
     st.experimental_rerun()
 
 st.title('Upload Image And Chat with Image')
 
+# API Key input section
 if "app_key" not in st.session_state:
     st.markdown(
         "To use this app, you need a Gemini API key. If you don't have one, you can create it "
@@ -42,14 +43,13 @@ try:
 except AttributeError as e:
     st.warning("Please Put Your Gemini App Key First.")
 
-
 def show_message(prompt, image, loading_str):
     with st.chat_message("assistant"):
         message_placeholder = st.empty()
         message_placeholder.markdown(loading_str)
         full_response = ""
         try:
-            for chunk in model.generate_content([prompt, image], stream = True):                   
+            for chunk in model.generate_content([prompt, image], stream=True):                   
                 word_count = 0
                 random_int = random.randint(5, 10)
                 for word in chunk.text:
@@ -70,27 +70,34 @@ def show_message(prompt, image, loading_str):
 def clear_state():
     st.session_state.history_pic = []
 
+def delete_message(idx):
+    del st.session_state.history_pic[idx]
+    st.experimental_rerun()
 
 if "history_pic" not in st.session_state:
     st.session_state.history_pic = []
 
-
 image = None
 if "app_key" in st.session_state:
-    uploaded_file = st.file_uploader("choose a pic...", type=["jpg", "png", "jpeg", "gif"], label_visibility='collapsed', on_change = clear_state)
+    uploaded_file = st.file_uploader("Choose a pic...", type=["jpg", "png", "jpeg", "gif"], label_visibility='collapsed', on_change=clear_state)
     if uploaded_file is not None:
         image = Image.open(uploaded_file)
         width, height = image.size
-        resized_img = image.resize((128, int(height/(width/128))), Image.LANCZOS)
+        resized_img = image.resize((128, int(height / (width / 128))), Image.LANCZOS)
         st.image(image)    
 
 if len(st.session_state.history_pic) > 0:
-    for item in st.session_state.history_pic:
-        with st.chat_message(item["role"]):
-            st.markdown(item["text"])
+    for idx, item in enumerate(st.session_state.history_pic):
+        col1, col2 = st.columns([1, 1])
+        with col1:
+            with st.chat_message(item["role"]):
+                st.markdown(item["text"])
+        with col2:
+            if st.button("Delete", key=f"delete_{idx}"):
+                delete_message(idx)
 
 if "app_key" in st.session_state:
-    if prompt := st.chat_input("desc this picture"):
+    if prompt := st.chat_input("Describe this picture"):
         if image is None:
             st.warning("Please upload an image first", icon="⚠️")
         else:
