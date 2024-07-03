@@ -57,12 +57,24 @@ def refresh_chat():
 # Display the chat history with delete options
 for idx, message in enumerate(st.session_state.history):
     role = "assistant" if message.role == "model" else message.role
-    with st.chat_message(role):
-        st.markdown(message.text)
+    try:
+        # Debugging information
+        st.write(f"Message object: {message}")
+        st.write(f"Message type: {type(message)}")
+        st.write(f"Message attributes: {dir(message)}")
+
+        # Adjusted based on debugging info
+        message_text = getattr(message, 'text', 'No text attribute found')
+        with st.chat_message(role):
+            st.markdown(message_text)
+        
         if st.button("Delete", key=f"delete_{idx}"):
             delete_message(idx)
             refresh_chat()  # Refresh chat after deletion
             st.experimental_rerun()
+
+    except AttributeError as e:
+        st.error(f"AttributeError: {e}")
 
 # Handle new chat input
 if "app_key" in st.session_state:
