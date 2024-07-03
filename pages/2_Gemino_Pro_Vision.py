@@ -65,24 +65,25 @@ def show_message(prompt, image, loading_str, idx):
         message_placeholder.markdown(full_response)
         st.session_state.history_pic[idx] = {"role": "assistant", "text": full_response}
 
-        # Add delete and rewrite buttons immediately after the response
+        # Add delete and edit buttons immediately after the response
         col1, col2 = st.columns([1, 1])
         with col1:
             if st.button("Delete", key=f"delete_{idx}"):
                 delete_message(idx)
                 st.experimental_rerun()
         with col2:
-            if st.button("Rewrite", key=f"rewrite_{idx}"):
-                # Store the text to be rewritten
-                st.session_state.rewrite_text = full_response
-                st.session_state.rewrite_idx = idx
+            if st.button("Edit", key=f"edit_{idx}"):
+                st.session_state.edit_message_idx = idx
+                st.session_state.edit_message_text = full_response
+                st.session_state.is_editing = True
                 st.experimental_rerun()
 
 def clear_chat_window():
     st.session_state.history = []
     st.session_state.history_pic = []
-    st.session_state.rewrite_text = ""
-    st.session_state.rewrite_idx = None
+    st.session_state.edit_message_idx = None
+    st.session_state.edit_message_text = ""
+    st.session_state.is_editing = False
     st.experimental_rerun()
 
 def clear_state():
@@ -90,10 +91,12 @@ def clear_state():
 
 if "history_pic" not in st.session_state:
     st.session_state.history_pic = []
-if "rewrite_text" not in st.session_state:
-    st.session_state.rewrite_text = ""
-if "rewrite_idx" not in st.session_state:
-    st.session_state.rewrite_idx = None
+if "edit_message_idx" not in st.session_state:
+    st.session_state.edit_message_idx = None
+if "edit_message_text" not in st.session_state:
+    st.session_state.edit_message_text = ""
+if "is_editing" not in st.session_state:
+    st.session_state.is_editing = False
 
 image = None
 if "app_key" in st.session_state:
@@ -112,30 +115,38 @@ def rewrite_message(idx, new_text):
 
 if len(st.session_state.history_pic) > 0:
     for idx, item in enumerate(st.session_state.history_pic):
-        with st.chat_message(item["role"]):
-            st.markdown(item["text"])
-            col1, col2 = st.columns([1, 1])
-            with col1:
-                if st.button("Delete", key=f"delete_{idx}_history"):
-                    delete_message(idx)
-                    st.experimental_rerun()
-            with col2:
-                if st.button("Rewrite", key=f"rewrite_{idx}_history"):
-                    # Store the text to be rewritten
-                    st.session_state.rewrite_text = item["text"]
-                    st.session_state.rewrite_idx = idx
-                    st.experimental_rerun()
-
-# Form for rewriting messages
-if st.session_state.rewrite_idx is not None:
-    with st.form(key='rewrite_form'):
-        new_text = st.text_area("Rewrite your message:", st.session_state.rewrite_text, key='rewrite_text_area')
-        submit_button = st.form_submit_button(label='Submit')
-        if submit_button:
-            rewrite_message(st.session_state.rewrite_idx, new_text)
-            st.session_state.rewrite_text = ""
-            st.session_state.rewrite_idx = None
-            st.experimental_rerun()
+        if not (st.session_state.is_editing and st.session_state.edit_message_idx == idx):
+            with st.chat_message(item["role"]):
+                st.markdown(item["text"])
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    if st.button("Delete", key=f"delete_{idx}_history"):
+                        delete_message(idx)
+                        st.experimental_rerun()
+                with col2:
+                    if st.button("Edit", key=f"edit_{idx}_history"):
+                        st.session_state.edit_message_idx = idx
+                        st.session_state.edit_message_text = item["text"]
+                        st.session_state.is_editing = True
+                        st.experimental_rerun()
+        elif st.session_state.edit_message_idx == idx:
+            with st.chat_message("user"):
+                st.text_area("Edit your message:", st.session_state.edit_message_text, key=f"edit_text_area_{idx}")
+                col1, col2 = st.columns([1, 1])
+                with col1:
+                    if st.button("Cancel", key=f"cancel_edit_{idx}"):
+                        st.session_state.is_editing = False
+                        st.session_state.edit_message_idx = None
+                        st.session_state.edit_message_text = ""
+                        st.experimental_rerun()
+                with col2:
+                    if st.button("Submit", key=f"submit_edit_{idx}"):
+                        new_text = st.session_state.edit_message_text
+                        rewrite_message(idx, new_text)
+                        st.session_state.is_editing = False
+                        st.session_state.edit_message_idx = None
+                        st.session_state.edit_message_text = ""
+                        st.experimental_rerun()
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Describe this picture", key='prompt_input'):
