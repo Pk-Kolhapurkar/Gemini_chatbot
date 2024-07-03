@@ -50,13 +50,17 @@ def delete_message(idx):
     del st.session_state.history[idx]
     st.experimental_rerun()
 
-for idx, message in enumerate(chat.history):
-    role = "assistant" if message.role == "model" else message.role
-    with st.chat_message(role):
-        st.markdown(message.parts[0].text)
-        if st.button("Delete", key=f"delete_{idx}"):
-            delete_message(idx)
+# Display existing chat history with delete options
+if st.session_state.history:
+    for idx, message in enumerate(st.session_state.history):
+        role = message["role"]
+        with st.chat_message(role):
+            st.markdown(message["text"])
+            if role == "assistant":
+                if st.button("Delete", key=f"delete_{idx}"):
+                    delete_message(idx)
 
+# Handle new input and display
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
         prompt = prompt.replace('\n', '  \n')
@@ -80,8 +84,11 @@ if "app_key" in st.session_state:
                             word_count = 0
                             random_int = random.randint(5, 10)
                 message_placeholder.markdown(full_response)
+                # Update chat history
+                st.session_state.history = chat.history
+                # Add new message to the history
+                st.session_state.history.append({"role": "assistant", "text": full_response})
             except genai.types.generation_types.BlockedPromptException as e:
                 st.exception(e)
             except Exception as e:
                 st.exception(e)
-            st.session_state.history = chat.history
