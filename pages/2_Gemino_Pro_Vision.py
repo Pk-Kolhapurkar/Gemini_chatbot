@@ -18,7 +18,11 @@ st.set_page_config(
     }
 )
 
+# Sidebar for the Gemini logo and clear chat button
 st.sidebar.image(image_path, caption='Gemini AI', use_column_width=True)
+st.sidebar.title("Options")
+if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primary"):
+    clear_chat_window()
 
 st.title('Upload Image And Chat with Image')
 
@@ -73,6 +77,11 @@ def show_message(prompt, image, loading_str, idx):
                 if new_text:
                     rewrite_message(idx, new_text)
                     st.experimental_rerun()
+
+def clear_chat_window():
+    st.session_state.history = []
+    st.session_state.history_pic = []
+    st.experimental_rerun()
 
 def clear_state():
     st.session_state.history_pic = []
