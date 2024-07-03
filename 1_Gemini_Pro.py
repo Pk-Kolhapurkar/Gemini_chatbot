@@ -50,19 +50,20 @@ def delete_message(idx):
     del st.session_state.history[idx]
     st.experimental_rerun()
 
-# Function to display each message with a delete button
-def display_message_with_delete(idx, message):
-    role = "assistant" if message["role"] == "model" else message["role"]
-    with st.chat_message(role):
-        st.markdown(message["text"])
-        if st.button("Delete", key=f"delete_{idx}"):
-            delete_message(idx)
+# Display messages with delete options
+def display_messages():
+    for idx, message in enumerate(st.session_state.history):
+        role = "assistant" if message["role"] == "model" else message["role"]
+        with st.chat_message(role):
+            st.markdown(message["text"])
+            if role == "assistant":
+                if st.button(f"Delete Message {idx}", key=f"delete_{idx}"):
+                    delete_message(idx)
 
-# Display existing chat history
-for idx, message in enumerate(st.session_state.history):
-    display_message_with_delete(idx, message)
+# Display the chat history
+display_messages()
 
-# Handle new input
+# Handle new user input
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
         prompt = prompt.replace('\n', '  \n')
@@ -88,8 +89,10 @@ if "app_key" in st.session_state:
                             random_int = random.randint(5, 10)
                 message_placeholder.markdown(full_response)
                 st.session_state.history.append({"role": "model", "text": full_response})
-                display_message_with_delete(len(st.session_state.history) - 1, {"role": "model", "text": full_response})
             except genai.types.generation_types.BlockedPromptException as e:
                 st.exception(e)
             except Exception as e:
                 st.exception(e)
+            
+            # Display the new assistant's message with the delete option immediately
+            display_messages()
