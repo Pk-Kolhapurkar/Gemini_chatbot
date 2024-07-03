@@ -3,7 +3,7 @@ import google.generativeai as genai
 import streamlit as st
 import time
 import random
-from utils import SAFETY_SETTINGS
+
 from dotenv import load_dotenv
 
 load_dotenv()
