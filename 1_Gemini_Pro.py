@@ -23,7 +23,7 @@ if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primar
     st.session_state.history = []
     st.experimental_rerun()
 
-st.title('Ask questions to me ')
+st.title('The Answer Genie')
 
 # API Key input section
 if "app_key" not in st.session_state:
