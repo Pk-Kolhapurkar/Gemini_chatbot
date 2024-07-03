@@ -52,14 +52,14 @@ def delete_message(idx):
 
 # Function to display each message with a delete button
 def display_message_with_delete(idx, message):
-    role = "assistant" if message.role == "model" else message.role
+    role = "assistant" if message["role"] == "model" else message["role"]
     with st.chat_message(role):
-        st.markdown(message.parts[0].text)
+        st.markdown(message["text"])
         if st.button("Delete", key=f"delete_{idx}"):
             delete_message(idx)
 
 for idx, message in enumerate(chat.history):
-    display_message_with_delete(idx, message)
+    display_message_with_delete(idx, {"role": message.role, "text": message.parts[0].text})
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
