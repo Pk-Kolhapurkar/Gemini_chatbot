@@ -47,36 +47,16 @@ model = genai.GenerativeModel('gemini-pro')
 chat = model.start_chat(history=st.session_state.history)
 
 def delete_message(idx):
-    if 0 <= idx < len(st.session_state.history):
-        del st.session_state.history[idx]
+    del st.session_state.history[idx]
+    st.experimental_rerun()
 
-def refresh_chat():
-    global chat
-    chat = model.start_chat(history=st.session_state.history)
-
-# Display the chat history with delete options
-for idx, message in enumerate(st.session_state.history):
+for idx, message in enumerate(chat.history):
     role = "assistant" if message.role == "model" else message.role
-    try:
-        # Debugging information
-        st.write(f"Message object: {message}")
-        st.write(f"Message type: {type(message)}")
-        st.write(f"Message attributes: {dir(message)}")
-
-        # Adjusted based on debugging info
-        message_text = getattr(message, 'text', 'No text attribute found')
-        with st.chat_message(role):
-            st.markdown(message_text)
-        
+    with st.chat_message(role):
+        st.markdown(message.parts[0].text)
         if st.button("Delete", key=f"delete_{idx}"):
             delete_message(idx)
-            refresh_chat()  # Refresh chat after deletion
-            st.experimental_rerun()
 
-    except AttributeError as e:
-        st.error(f"AttributeError: {e}")
-
-# Handle new chat input
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Ask a question here"):
         prompt = prompt.replace('\n', '  \n')
