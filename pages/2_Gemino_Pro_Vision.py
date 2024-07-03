@@ -21,7 +21,7 @@ st.title('Upload Image And chat with image')
 if "app_key" not in st.session_state:
     st.markdown(
         "To use this app, you need a Gemini API key. If you don't have one, you can create it "
-        "[here](https://developers.google.com/gemini/get-api-key)."
+        "[here](https://aistudio.google.com/app/apikey)."
     )
     app_key = st.text_input("Enter your Gemini App Key below", type='password', key='api_key_input')
     if app_key:
