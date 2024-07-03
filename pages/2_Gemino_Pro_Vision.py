@@ -65,18 +65,12 @@ def show_message(prompt, image, loading_str, idx):
         message_placeholder.markdown(full_response)
         st.session_state.history_pic[idx] = {"role": "assistant", "text": full_response}
 
-        # Add delete and rewrite buttons immediately after the response
+        # Add delete button immediately after the response
         col1, col2 = st.columns([1, 1])
         with col1:
             if st.button("Delete", key=f"delete_{idx}"):
                 delete_message(idx)
                 st.experimental_rerun()
-        with col2:
-            if st.button("Rewrite", key=f"rewrite_{idx}"):
-                new_text = st.text_area(f"Rewrite message {idx}", full_response, key=f"rewrite_text_{idx}")
-                if new_text:
-                    rewrite_message(idx, new_text)
-                    st.experimental_rerun()
 
 def clear_chat_window():
     st.session_state.history = []
@@ -101,9 +95,6 @@ if "app_key" in st.session_state:
 def delete_message(idx):
     del st.session_state.history_pic[idx]
 
-def rewrite_message(idx, new_text):
-    st.session_state.history_pic[idx]["text"] = new_text
-
 if len(st.session_state.history_pic) > 0:
     for idx, item in enumerate(st.session_state.history_pic):
         with st.chat_message(item["role"]):
@@ -113,12 +104,6 @@ if len(st.session_state.history_pic) > 0:
                 if st.button("Delete", key=f"delete_{idx}_history"):
                     delete_message(idx)
                     st.experimental_rerun()
-            with col2:
-                if st.button("Rewrite", key=f"rewrite_{idx}_history"):
-                    new_text = st.text_area(f"Rewrite message {idx}", item["text"], key=f"rewrite_text_{idx}_history")
-                    if new_text:
-                        rewrite_message(idx, new_text)
-                        st.experimental_rerun()
 
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Describe this picture", key='prompt_input'):
