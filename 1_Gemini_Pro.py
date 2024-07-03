@@ -45,10 +45,10 @@ except AttributeError as e:
     st.warning("Please enter your Gemini App Key.")
 
 # Display chat history
-for message in chat.history:
-    role = "assistant" if message.role == "model" else message.role
+for message in st.session_state.history:
+    role = "assistant" if message['role'] == "model" else message['role']
     with st.chat_message(role):
-        st.markdown(message.parts[0].text)
+        st.markdown(message['text'])
 
 # Handle new prompts
 if "app_key" in st.session_state:
@@ -74,8 +74,8 @@ if "app_key" in st.session_state:
                             word_count = 0
                             random_int = random.randint(5, 10)
                 message_placeholder.markdown(full_response)
+                st.session_state.history.append({"role": "assistant", "text": full_response})
             except genai.types.generation_types.BlockedPromptException as e:
                 st.exception(e)
             except Exception as e:
                 st.exception(e)
-            st.session_state.history = chat.history
