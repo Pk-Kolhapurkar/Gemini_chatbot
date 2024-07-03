@@ -23,7 +23,7 @@ if st.sidebar.button("Clear Chat Window", use_container_width=True, type="primar
     st.session_state.history = []
     st.experimental_rerun()
 
-st.title('Upload Image and Chat with Image')
+st.title('Ask questions to me ')
 
 # API Key input section
 if "app_key" not in st.session_state:
@@ -52,7 +52,7 @@ for message in chat.history:
         st.markdown(message.parts[0].text)
 
 if "app_key" in st.session_state:
-    if prompt := st.chat_input("Describe this picture"):
+    if prompt := st.chat_input("ask question here"):
         prompt = prompt.replace('\n', '  \n')
         with st.chat_message("user"):
             st.markdown(prompt)
