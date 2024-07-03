@@ -66,7 +66,6 @@ def show_message(prompt, image, loading_str, idx):
         st.session_state.history_pic[idx] = {"role": "assistant", "text": full_response}
 
 def clear_chat_window():
-    st.session_state.history = []
     st.session_state.history_pic = []
     st.session_state.edit_message_idx = None
     st.session_state.edit_message_text = ""
@@ -100,6 +99,7 @@ def delete_message(idx):
 def rewrite_message(idx, new_text):
     st.session_state.history_pic[idx]["text"] = new_text
 
+# Display chat history
 if len(st.session_state.history_pic) > 0:
     for idx, item in enumerate(st.session_state.history_pic):
         if not (st.session_state.is_editing and st.session_state.edit_message_idx == idx):
@@ -139,6 +139,7 @@ if len(st.session_state.history_pic) > 0:
                     st.session_state.edit_message_text = ""
                     st.experimental_rerun()
 
+# Handle new user input
 if "app_key" in st.session_state:
     if prompt := st.chat_input("Describe this picture", key='prompt_input'):
         if image is None:
